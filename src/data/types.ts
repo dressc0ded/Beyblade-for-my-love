@@ -2,7 +2,14 @@
 // is derived from these types so the wiki, configurator, tier lists,
 // comparison tool, and simulator all read from one source of truth.
 
-export type Line = 'Basic' | 'Unique' | 'Custom' | 'Limited'
+/**
+ * Official Takara Tomy line names: Basic (BX- single releases), CX (Custom
+ * Line - combo blades built from a Lock Chip + two blade halves), and UX
+ * (Unique Line - single-mold boosters with their own numbering). `Limited`
+ * is not an official line - it's this app's tag for convention/region
+ * exclusives, which can cut across any of the three real lines.
+ */
+export type Line = 'Basic' | 'CX' | 'UX' | 'Limited'
 
 export type BladeType = 'Attack' | 'Defense' | 'Stamina' | 'Balance'
 
@@ -12,6 +19,9 @@ export type SpinDirection = 'Right' | 'Left'
 export type ShaftType = 'Standard' | 'CX'
 
 export type Rarity = 'Common' | 'Uncommon' | 'Rare' | 'Ultra Rare' | 'Convention Exclusive'
+
+/** Where a part has actually shipped at retail (or convention/promo distribution). */
+export type Region = 'Japan' | 'North America' | 'Europe' | 'Asia (ex-Japan)'
 
 /**
  * Data confidence: most numeric stats below are a community-style 0-10
@@ -36,6 +46,8 @@ export interface PartBase {
   releaseDate: string // YYYY-MM (approximate for estimated entries)
   rarity: Rarity
   confidence: Confidence
+  /** Every region this part has actually been sold in, e.g. ['Japan'] for a Takara Tomy-only single booster. */
+  regions: Region[]
   notes?: string
 }
 
@@ -44,8 +56,12 @@ export interface Blade extends PartBase {
   type: BladeType
   spinDirection: SpinDirection
   shaftType: ShaftType
-  /** true for Custom-line blades assembled from two combinable halves */
+  /** true for CX-line blades assembled from a Lock Chip + two blade halves */
   isComboBlade: boolean
+  /** CX-exclusive named part that joins the two blade halves (e.g. "Dran", "Wizard") */
+  lockChip?: string
+  /** Hasbro's Western retail name, when it differs from the Takara Tomy name */
+  hasbroName?: string
   weightGrams: number
   stats: StatBlock
 }
@@ -88,9 +104,9 @@ export interface SavedBuild {
 }
 
 export const LINE_COLORS: Record<Line, { accent: string; bg: string; text: string; border: string }> = {
-  Basic: { accent: '#3b82f6', bg: '#1d3a6b', text: '#bfdbfe', border: '#60a5fa' },
-  Unique: { accent: '#a855f7', bg: '#3b1d6b', text: '#e9d5ff', border: '#c084fc' },
-  Custom: { accent: '#f97316', bg: '#6b3a1d', text: '#fed7aa', border: '#fb923c' },
+  Basic: { accent: '#22d3ee', bg: '#0e3a44', text: '#a5f3fc', border: '#67e8f9' },
+  UX: { accent: '#ec4899', bg: '#4a0f30', text: '#fbcfe8', border: '#f472b6' },
+  CX: { accent: '#f97316', bg: '#6b3a1d', text: '#fed7aa', border: '#fb923c' },
   Limited: { accent: '#facc15', bg: '#6b5a1d', text: '#fef9c3', border: '#fde047' },
 }
 

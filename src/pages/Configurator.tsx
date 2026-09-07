@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import PartPicker from '../components/PartPicker'
-import PixelBey from '../components/PixelBey'
+import BladeIcon from '../components/BladeIcon'
 import StatBars from '../components/StatBars'
 import LineBadge from '../components/LineBadge'
 import { BITS, BLADES, RATCHETS, isCompatible } from '../data/parts'
@@ -32,7 +32,7 @@ export default function Configurator() {
       </div>
 
       <div className="pixel-border bg-panel p-4 flex flex-col items-center" style={{ borderColor: '#000' }}>
-        <PixelBey blade={blade} ratchet={ratchet} bit={bit} size={200} />
+        <BladeIcon blade={blade} size={200} />
         <div className="mt-3 text-center">
           <div className="font-pixel text-[11px] text-white">{blade.name}</div>
           <div className="text-slate-400 text-sm">{ratchet.name} / {bit.name}</div>

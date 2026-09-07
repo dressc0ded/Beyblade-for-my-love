@@ -1,23 +1,27 @@
 import { Link } from 'react-router-dom'
-import PixelBey from '../components/PixelBey'
-import { BITS, BLADES, RATCHETS } from '../data/parts'
+import heroArt from '../assets/hero-let-it-test.jpg'
 
 const TILES = [
-  { to: '/configurator', label: 'Configurator', desc: 'Build any legal combo', color: '#3b82f6', icon: '⚙' },
-  { to: '/wiki', label: 'Part Wiki', desc: 'Search every part', color: '#a855f7', icon: '≡' },
+  { to: '/configurator', label: 'Configurator', desc: 'Build any legal combo', color: '#22d3ee', icon: '⚙' },
+  { to: '/wiki', label: 'Part Wiki', desc: 'Search every part', color: '#ec4899', icon: '≡' },
   { to: '/tier-lists', label: 'Tier Lists', desc: 'S-D rankings by meta', color: '#facc15', icon: '★' },
   { to: '/compare', label: 'Compare', desc: 'Part vs. part breakdown', color: '#f97316', icon: '⇄' },
-  { to: '/battle', label: 'Battle Sim', desc: 'Simulate a match', color: '#ef4444', icon: '⚔' },
-  { to: '/compendium', label: 'Compendium', desc: 'Release strategy codex', color: '#22d3ee', icon: '⌘' },
+  { to: '/battle', label: 'Battle Sim', desc: 'Simulate a match', color: '#ff2fd0', icon: '⚔' },
+  { to: '/compendium', label: 'Compendium', desc: 'Release strategy codex', color: '#a3e635', icon: '⌘' },
 ]
 
 export default function Home() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="pixel-border bg-panel p-6 mb-4 text-center" style={{ borderColor: '#000' }}>
-        <PixelBey blade={BLADES[0]} ratchet={RATCHETS[0]} bit={BITS[0]} size={140} />
-        <h1 className="font-pixel text-limited text-xl md:text-2xl mt-4 animate-flicker">COMBO LAB</h1>
-        <p className="mt-2 text-slate-300 text-lg">The Beyblade X workshop — build, study, rank, compare, and battle.</p>
+        <img
+          src={heroArt}
+          alt="Beyblade X - Let It Test"
+          className="mx-auto pixel-border w-full max-w-xs object-cover"
+          style={{ borderColor: '#000' }}
+        />
+        <h1 className="font-pixel holo-text text-xl md:text-2xl mt-4">COMBO LAB</h1>
+        <p className="mt-2 text-slate-200 text-lg">The Beyblade X workshop — build, study, rank, compare, and battle.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -35,7 +39,7 @@ export default function Home() {
               {tile.icon}
             </div>
             <div className="font-pixel text-[12px] text-white mt-2">{tile.label}</div>
-            <div className="text-slate-400 text-base">{tile.desc}</div>
+            <div className="text-slate-300 text-base">{tile.desc}</div>
           </Link>
         ))}
       </div>

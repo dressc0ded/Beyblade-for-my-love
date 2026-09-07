@@ -5,14 +5,16 @@
   --font-pixel: 'Press Start 2P', monospace;
   --font-mono-retro: 'VT323', monospace;
 
-  --color-basic: #3b82f6;
-  --color-unique: #a855f7;
+  --color-basic: #22d3ee;
+  --color-unique: #ec4899;
   --color-custom: #f97316;
   --color-limited: #facc15;
 
-  --color-ink: #0b0817;
-  --color-panel: #171227;
-  --color-panel-2: #211a38;
+  --color-ink: #1a0033;
+  --color-panel: #2a0a4d;
+  --color-panel-2: #3a1268;
+  --color-y2k: #9800ff;
+  --color-y2k-2: #ff2fd0;
 }
 
 html,
@@ -22,25 +24,40 @@ body,
 }
 
 body {
-  background: var(--color-ink);
-  color: #e5e7eb;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.16), transparent 38%),
+    radial-gradient(circle at 88% 14%, rgba(255, 47, 208, 0.28), transparent 42%),
+    radial-gradient(circle at 80% 92%, rgba(0, 229, 255, 0.18), transparent 40%),
+    linear-gradient(160deg, #9800ff 0%, #5b00a8 42%, #1a0033 100%);
+  background-attachment: fixed;
+  color: #f3e8ff;
   image-rendering: pixelated;
   font-family: var(--font-mono-retro);
   font-size: 18px;
+  min-height: 100%;
 }
 
 .font-pixel {
   font-family: var(--font-pixel);
 }
 
-/* Chunky pixel border used throughout for the SNES-panel look */
+/* Chunky pixel border, Y2K chrome edition: deep-violet drop shadow + a thin
+   holographic top-left highlight so panels read as glossy plastic, not flat. */
 .pixel-border {
   border-style: solid;
   border-width: 4px;
+  position: relative;
   box-shadow:
-    0 0 0 2px #000,
-    4px 4px 0 0 #000;
+    0 0 0 2px #12002b,
+    4px 4px 0 0 #12002b,
+    0 0 18px rgba(255, 47, 208, 0.15);
   image-rendering: pixelated;
+}
+
+.bg-panel,
+.bg-panel-2 {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 45%);
+  backdrop-filter: blur(2px);
 }
 
 .pixel-btn {
@@ -48,7 +65,7 @@ body {
 }
 .pixel-btn:hover {
   transform: translate(-2px, -2px);
-  filter: brightness(1.15);
+  filter: brightness(1.2) saturate(1.15);
 }
 .pixel-btn:active {
   transform: translate(1px, 1px);
@@ -67,12 +84,34 @@ body {
   animation: bounce-pixel 0.6s steps(4) infinite;
 }
 
+@keyframes clash-flash {
+  from { opacity: 0.75; }
+  to { opacity: 0; }
+}
+.animate-clash-flash {
+  animation: clash-flash 0.3s ease-out forwards;
+}
+
 @keyframes flicker {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
 .animate-flicker {
   animation: flicker 1.2s steps(2) infinite;
+}
+
+/* Holographic foil sweep, used sparingly on hero/logo elements for Y2K sticker vibe */
+@keyframes holo-sweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.holo-text {
+  background: linear-gradient(90deg, #ff2fd0, #facc15, #22d3ee, #9800ff, #ff2fd0);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: holo-sweep 4s linear infinite;
 }
 
 ::-webkit-scrollbar {
@@ -83,7 +122,7 @@ body {
   background: var(--color-ink);
 }
 ::-webkit-scrollbar-thumb {
-  background: #4c3d7a;
+  background: linear-gradient(180deg, #ff2fd0, #9800ff);
   border: 2px solid var(--color-ink);
 }
 
@@ -100,5 +139,5 @@ body {
     transparent 1px,
     transparent 3px
   );
-  opacity: 0.35;
+  opacity: 0.3;
 }

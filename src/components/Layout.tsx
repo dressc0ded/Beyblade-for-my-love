@@ -15,7 +15,7 @@ export default function Layout() {
     <div className="min-h-full flex flex-col">
       <div className="crt-scanlines" />
       <header className="pixel-border bg-panel m-2 mb-0 p-3 flex flex-wrap items-center gap-3" style={{ borderColor: '#000' }}>
-        <NavLink to="/" className="font-pixel text-[11px] text-limited whitespace-nowrap">
+        <NavLink to="/" className="font-pixel text-[11px] holo-text whitespace-nowrap">
           COMBO LAB
         </NavLink>
         <nav className="flex flex-wrap gap-2 text-[11px] font-pixel">

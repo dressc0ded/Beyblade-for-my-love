@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { BITS, BLADES, RATCHETS } from '../data/parts'
 import type { AnyPart, PartCategory } from '../data/types'
 import LineBadge from '../components/LineBadge'
@@ -21,7 +21,7 @@ export default function TierLists() {
 
   const parts = CATEGORIES.find((c) => c.key === category)!.parts
 
-  const computed = useMemo(() => assignTiers(parts, (p) => metaScore(p.stats, meta)), [parts, meta])
+  const computed = assignTiers(parts, (p) => metaScore(p.stats, meta))
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -30,6 +30,7 @@ export default function TierLists() {
           {CATEGORIES.map((c) => (
             <button
               key={c.key}
+              type="button"
               onClick={() => setCategory(c.key)}
               className={`pixel-btn pixel-border px-2 py-1 font-pixel text-[9px] ${category === c.key ? 'bg-basic text-white' : 'bg-black/30 text-slate-300'}`}
               style={{ borderColor: '#000' }}
@@ -40,6 +41,7 @@ export default function TierLists() {
         </div>
         <div className="flex gap-2 ml-auto">
           <button
+            type="button"
             onClick={() => setMode('computed')}
             className={`pixel-btn pixel-border px-2 py-1 font-pixel text-[9px] ${mode === 'computed' ? 'bg-custom text-white' : 'bg-black/30 text-slate-300'}`}
             style={{ borderColor: '#000' }}
@@ -47,6 +49,7 @@ export default function TierLists() {
             META TIER LIST
           </button>
           <button
+            type="button"
             onClick={() => setMode('custom')}
             className={`pixel-btn pixel-border px-2 py-1 font-pixel text-[9px] ${mode === 'custom' ? 'bg-custom text-white' : 'bg-black/30 text-slate-300'}`}
             style={{ borderColor: '#000' }}
@@ -62,6 +65,7 @@ export default function TierLists() {
             {METAS.map((m) => (
               <button
                 key={m}
+                type="button"
                 onClick={() => setMeta(m)}
                 className={`pixel-btn pixel-border px-2 py-1 font-pixel text-[9px] capitalize ${meta === m ? 'bg-limited text-black' : 'bg-black/30 text-slate-300'}`}
                 style={{ borderColor: '#000' }}
@@ -70,13 +74,13 @@ export default function TierLists() {
               </button>
             ))}
           </div>
-          <div className="pixel-border bg-panel-2 p-3 mb-4 text-slate-400 text-sm" style={{ borderColor: '#000' }}>
-            <span className="font-pixel text-[9px] text-slate-300">METHODOLOGY: </span>
+          <div className="pixel-border bg-panel-2 p-3 mb-4 text-slate-300 text-sm" style={{ borderColor: '#000' }}>
+            <span className="font-pixel text-[9px] text-slate-200">METHODOLOGY: </span>
             Each part's score is a weighted sum of its Attack / Defense / Stamina / Burst Resistance / Dash ratings.
             The <strong className="text-white capitalize">{meta}</strong> view weights{' '}
             {meta === 'overall'
               ? 'every stat equally'
-              : `${meta} (and its supporting stats like ${meta === 'attack' ? 'Dash' : meta === 'defense' ? 'Burst Resistance' : 'Burst Resistance'}) far more heavily than the rest`}
+              : `${meta} (and its supporting stats like ${meta === 'attack' ? 'Dash' : 'Burst Resistance'}) far more heavily than the rest`}
             . Parts are then bucketed into tiers by rank: top ~12% S, next ~23% A, middle ~30% B, next ~20% C, bottom ~15% D — so
             tiers reflect relative standing within this dataset, not a fixed numeric cutoff. This is a gameplay-style estimate, not an
             official competitive-usage ranking.
@@ -105,45 +109,105 @@ export default function TierLists() {
           </div>
         </>
       ) : (
-        <CustomTierList category={category} parts={parts} />
+        <CustomTierList key={category} category={category} parts={parts} />
       )}
     </div>
   )
 }
 
-function CustomTierList({ category, parts }: { category: PartCategory; parts: AnyPart[] }) {
-  const storageKeyPrefix = category
-  const [buckets, setBuckets] = useState<Record<string, string[]>>(() => {
-    const saved = loadCustomTierList()
-    const initial: Record<string, string[]> = { S: [], A: [], B: [], C: [], D: [], Unranked: [] }
-    const seen = new Set<string>()
-    if (saved) {
-      for (const tier of TIERS) {
-        const ids = (saved[`${storageKeyPrefix}:${tier}`] ?? []).filter((id) => parts.some((p) => p.id === id) && !seen.has(id))
-        ids.forEach((id) => seen.add(id))
-        initial[tier] = ids
-      }
+const ROWS = [...TIERS, 'Unranked'] as const
+type RowKey = (typeof ROWS)[number]
+
+function loadInitialBuckets(category: PartCategory, parts: AnyPart[]): Record<RowKey, string[]> {
+  const saved = loadCustomTierList()
+  const initial = { S: [], A: [], B: [], C: [], D: [], Unranked: [] } as Record<RowKey, string[]>
+  const seen = new Set<string>()
+  if (saved) {
+    for (const tier of TIERS) {
+      const ids = (saved[`${category}:${tier}`] ?? []).filter((id) => parts.some((p) => p.id === id) && !seen.has(id))
+      ids.forEach((id) => seen.add(id))
+      initial[tier] = ids
     }
-    initial.Unranked = parts.filter((p) => !seen.has(p.id)).map((p) => p.id)
-    return initial
-  })
+  }
+  initial.Unranked = parts.filter((p) => !seen.has(p.id)).map((p) => p.id)
+  return initial
+}
+
+function CustomTierList({ category, parts }: { category: PartCategory; parts: AnyPart[] }) {
+  const [buckets, setBuckets] = useState<Record<RowKey, string[]>>(() => loadInitialBuckets(category, parts))
+  const [dragId, setDragId] = useState<string | null>(null)
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 })
+  const [hoverRow, setHoverRow] = useState<RowKey | null>(null)
+  const rowRefs = useRef<Partial<Record<RowKey, HTMLDivElement | null>>>({})
+  const dragOriginRow = useRef<RowKey | null>(null)
 
   useEffect(() => {
     const all = loadCustomTierList() ?? {}
-    for (const tier of [...TIERS, 'Unranked']) {
-      all[`${storageKeyPrefix}:${tier}`] = buckets[tier] ?? []
+    for (const tier of ROWS) {
+      all[`${category}:${tier}`] = buckets[tier] ?? []
     }
     persistCustomTierList(all)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buckets])
+  }, [buckets, category])
 
-  function moveTo(id: string, target: string) {
-    setBuckets((prev) => {
-      const next: Record<string, string[]> = {}
-      for (const key of Object.keys(prev)) next[key] = prev[key].filter((x) => x !== id)
-      next[target] = [...(next[target] ?? []), id]
-      return next
-    })
+  const rowAtPoint = useCallback((x: number, y: number): RowKey | null => {
+    for (const tier of ROWS) {
+      const el = rowRefs.current[tier]
+      if (!el) continue
+      const rect = el.getBoundingClientRect()
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return tier
+    }
+    return null
+  }, [])
+
+  const endDrag = useCallback(
+    (drop: boolean, x: number, y: number) => {
+      if (dragId) {
+        if (drop) {
+          const target = rowAtPoint(x, y)
+          if (target) {
+            setBuckets((prev) => {
+              const next: Record<RowKey, string[]> = { S: [], A: [], B: [], C: [], D: [], Unranked: [] }
+              for (const key of ROWS) next[key] = prev[key].filter((id) => id !== dragId)
+              next[target] = [...next[target], dragId]
+              return next
+            })
+          }
+        }
+      }
+      setDragId(null)
+      setHoverRow(null)
+      dragOriginRow.current = null
+    },
+    [dragId, rowAtPoint],
+  )
+
+  useEffect(() => {
+    if (!dragId) return
+    function onMove(e: PointerEvent) {
+      setDragPos({ x: e.clientX, y: e.clientY })
+      setHoverRow(rowAtPoint(e.clientX, e.clientY))
+    }
+    function onUp(e: PointerEvent) {
+      endDrag(true, e.clientX, e.clientY)
+    }
+    function onCancel() {
+      endDrag(false, 0, 0)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onCancel)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onCancel)
+    }
+  }, [dragId, rowAtPoint, endDrag])
+
+  function startDrag(e: React.PointerEvent, id: string, fromRow: RowKey) {
+    e.preventDefault()
+    dragOriginRow.current = fromRow
+    setDragId(id)
+    setDragPos({ x: e.clientX, y: e.clientY })
   }
 
   function partById(id: string) {
@@ -151,33 +215,36 @@ function CustomTierList({ category, parts }: { category: PartCategory; parts: An
   }
 
   return (
-    <div className="space-y-2">
-      <div className="text-slate-400 text-sm mb-2">Drag part chips between rows to build your own tier list. Saved automatically per category.</div>
-      {[...TIERS, 'Unranked' as const].map((tier) => (
+    <div className="space-y-2" style={{ touchAction: dragId ? 'none' : undefined }}>
+      <div className="text-slate-300 text-sm mb-2">
+        Press and drag a part chip into a row to rank it. Saved automatically per category.
+      </div>
+      {ROWS.map((tier) => (
         <div
           key={tier}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            const id = e.dataTransfer.getData('text/plain')
-            if (id) moveTo(id, tier)
+          data-tier={tier}
+          ref={(el) => {
+            rowRefs.current[tier] = el
           }}
-          className="flex pixel-border bg-panel-2 overflow-hidden min-h-14"
-          style={{ borderColor: '#000' }}
+          className="flex pixel-border overflow-hidden min-h-14 transition-colors"
+          style={{ borderColor: '#000', background: hoverRow === tier ? 'rgba(255,255,255,0.12)' : undefined }}
         >
           <div
             className="font-pixel text-sm w-14 flex items-center justify-center shrink-0"
-            style={{ background: tier === 'Unranked' ? '#334155' : TIER_COLORS[tier as Tier], color: tier === 'Unranked' ? '#e2e8f0' : '#0b0817' }}
+            style={{
+              background: tier === 'Unranked' ? '#334155' : TIER_COLORS[tier as Tier],
+              color: tier === 'Unranked' ? '#e2e8f0' : '#0b0817',
+            }}
           >
             {tier === 'Unranked' ? '?' : tier}
           </div>
-          <div className="flex flex-wrap gap-2 p-2 flex-1">
-            {(buckets[tier] ?? []).map((id) => (
+          <div className="flex flex-wrap gap-2 p-2 flex-1 bg-panel-2">
+            {buckets[tier].map((id) => (
               <div
                 key={id}
-                draggable
-                onDragStart={(e) => e.dataTransfer.setData('text/plain', id)}
-                className="pixel-border bg-black/30 px-2 py-1 text-sm cursor-grab active:cursor-grabbing"
-                style={{ borderColor: '#000' }}
+                onPointerDown={(e) => startDrag(e, id, tier)}
+                className="pixel-border bg-black/30 px-2 py-1 text-sm select-none cursor-grab active:cursor-grabbing"
+                style={{ borderColor: '#000', opacity: dragId === id ? 0.25 : 1, touchAction: 'none' }}
               >
                 {partById(id).name}
               </div>
@@ -185,6 +252,15 @@ function CustomTierList({ category, parts }: { category: PartCategory; parts: An
           </div>
         </div>
       ))}
+
+      {dragId && (
+        <div
+          className="pixel-border bg-black/80 px-2 py-1 text-sm pointer-events-none fixed z-50"
+          style={{ borderColor: '#000', left: dragPos.x + 12, top: dragPos.y + 12 }}
+        >
+          {partById(dragId).name}
+        </div>
+      )}
     </div>
   )
 }

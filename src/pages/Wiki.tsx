@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { ALL_PARTS } from '../data/parts'
-import type { AnyPart, Line, PartCategory, StatBlock } from '../data/types'
+import type { AnyPart, Line, PartCategory, Region, StatBlock } from '../data/types'
 import { STAT_KEYS, STAT_LABELS } from '../data/types'
 import LineBadge from '../components/LineBadge'
 import StatBars from '../components/StatBars'
+import { regionLabel } from '../lib/regions'
 
 const CATEGORIES: (PartCategory | 'All')[] = ['All', 'Blade', 'Ratchet', 'Bit']
-const LINES: (Line | 'All')[] = ['All', 'Basic', 'Unique', 'Custom', 'Limited']
+const LINES: (Line | 'All')[] = ['All', 'Basic', 'CX', 'UX', 'Limited']
+const REGIONS: (Region | 'All')[] = ['All', 'Japan', 'North America', 'Europe', 'Asia (ex-Japan)']
 
 function dominantStat(stats: StatBlock): keyof StatBlock {
   return STAT_KEYS.reduce((best, key) => (stats[key] > stats[best] ? key : best), STAT_KEYS[0])
@@ -16,6 +18,7 @@ export default function Wiki() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<PartCategory | 'All'>('All')
   const [line, setLine] = useState<Line | 'All'>('All')
+  const [region, setRegion] = useState<Region | 'All'>('All')
   const [statFocus, setStatFocus] = useState<keyof StatBlock | 'All'>('All')
   const [sortBy, setSortBy] = useState<'name' | 'releaseDate' | 'rarity'>('name')
   const [view, setView] = useState<'table' | 'card'>('card')
@@ -25,6 +28,7 @@ export default function Wiki() {
     let list = ALL_PARTS.filter((p) => {
       if (category !== 'All' && p.category !== category) return false
       if (line !== 'All' && p.line !== line) return false
+      if (region !== 'All' && !p.regions.includes(region)) return false
       if (statFocus !== 'All' && dominantStat(p.stats) !== statFocus) return false
       if (query && !p.name.toLowerCase().includes(query.toLowerCase())) return false
       return true
@@ -35,7 +39,7 @@ export default function Wiki() {
       return a.rarity.localeCompare(b.rarity)
     })
     return list
-  }, [query, category, line, statFocus, sortBy])
+  }, [query, category, line, region, statFocus, sortBy])
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -52,6 +56,7 @@ export default function Wiki() {
         </div>
         <Select label="CATEGORY" value={category} onChange={setCategory} options={CATEGORIES} />
         <Select label="LINE" value={line} onChange={setLine} options={LINES} />
+        <Select label="REGION" value={region} onChange={setRegion} options={REGIONS} />
         <Select
           label="STAT FOCUS"
           value={statFocus}
@@ -94,6 +99,7 @@ export default function Wiki() {
                 <LineBadge line={p.line} />
               </div>
               <div className="text-slate-400 text-sm mt-1">{p.category} · {p.rarity}</div>
+              <div className="text-slate-400 text-xs mt-1">🌐 {regionLabel(p.regions)}</div>
               <div className="text-slate-500 text-xs mt-1">unofficial/estimated stats</div>
             </button>
           ))}
@@ -107,6 +113,7 @@ export default function Wiki() {
                 <th className="p-2">Category</th>
                 <th className="p-2">Line</th>
                 <th className="p-2">Rarity</th>
+                <th className="p-2">Region</th>
                 <th className="p-2">Released</th>
               </tr>
             </thead>
@@ -117,6 +124,7 @@ export default function Wiki() {
                   <td className="p-2 text-slate-400">{p.category}</td>
                   <td className="p-2"><LineBadge line={p.line} /></td>
                   <td className="p-2 text-slate-400">{p.rarity}</td>
+                  <td className="p-2 text-slate-400">{regionLabel(p.regions)}</td>
                   <td className="p-2 text-slate-400">{p.releaseDate}</td>
                 </tr>
               ))}
@@ -142,6 +150,9 @@ export default function Wiki() {
             <div className="text-slate-400 text-sm space-y-1 mb-3">
               <div>Rarity: {selected.rarity}</div>
               <div>Released: {selected.releaseDate}</div>
+              <div>🌐 Region: {regionLabel(selected.regions)}</div>
+              {'hasbroName' in selected && selected.hasbroName && <div>Hasbro name: {selected.hasbroName}</div>}
+              {'lockChip' in selected && selected.lockChip && <div>Lock Chip: {selected.lockChip}</div>}
               {'spinDirection' in selected && <div>Spin: {selected.spinDirection}</div>}
               {'type' in selected && <div>Archetype: {selected.type}</div>}
               {'movementType' in selected && <div>Movement: {selected.movementType}</div>}
