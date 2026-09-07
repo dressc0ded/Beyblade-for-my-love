@@ -72,9 +72,12 @@ export default function Gameplay() {
     audioRef.current.play().catch(() => setPlaying(false))
   }
 
+  function addRound() {
+    setRound((r) => r + 1)
+  }
+
   function addPoint(side: 'p1' | 'p2') {
     if (winner) return
-    setRound((r) => r + 1)
     const name = side === 'p1' ? p1Name || 'Player 1' : p2Name || 'Player 2'
     const next = side === 'p1' ? p1Points + 1 : p2Points + 1
     if (side === 'p1') setP1Points(next)
@@ -162,10 +165,18 @@ export default function Gameplay() {
             🏆 {winner.toUpperCase()} WINS THE MATCH!
           </div>
         )}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="font-pixel text-[10px] text-slate-300">ROUND</span>
-          <span className="font-pixel text-lg text-white">{round}</span>
-        </div>
+        <button
+          type="button"
+          onClick={addRound}
+          className="mx-auto mb-4 flex flex-col items-center pixel-btn pixel-border bg-black/30 px-6 py-2"
+          style={{ borderColor: '#facc15' }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="font-pixel text-[10px] text-slate-300">ROUND</span>
+            <span className="font-pixel text-lg text-white">{round}</span>
+          </div>
+          <div className="text-slate-400 text-sm mt-1">tap to add a round</div>
+        </button>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <button
             type="button"
