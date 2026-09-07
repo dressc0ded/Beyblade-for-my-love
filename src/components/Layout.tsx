@@ -8,6 +8,7 @@ const NAV = [
   { to: '/compare', label: 'Compare' },
   { to: '/battle', label: 'Battle' },
   { to: '/compendium', label: 'Compendium' },
+  { to: '/dedication', label: '♥' },
 ]
 
 export default function Layout() {

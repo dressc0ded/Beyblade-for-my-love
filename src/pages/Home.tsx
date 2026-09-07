@@ -1,13 +1,19 @@
 import { Link } from 'react-router-dom'
 import heroArt from '../assets/hero-let-it-test.jpg'
+import tileConfigurator from '../assets/tile-configurator.jpg'
+import tileWiki from '../assets/tile-wiki.jpg'
+import tileTierLists from '../assets/tile-tierlists.jpg'
+import tileCompare from '../assets/tile-compare.jpg'
+import tileBattle from '../assets/tile-battle.jpg'
+import tileCompendium from '../assets/tile-compendium.jpg'
 
 const TILES = [
-  { to: '/configurator', label: 'Configurator', desc: 'Build any legal combo', color: '#22d3ee', icon: '⚙' },
-  { to: '/wiki', label: 'Part Wiki', desc: 'Search every part', color: '#ec4899', icon: '≡' },
-  { to: '/tier-lists', label: 'Tier Lists', desc: 'S-D rankings by meta', color: '#facc15', icon: '★' },
-  { to: '/compare', label: 'Compare', desc: 'Part vs. part breakdown', color: '#f97316', icon: '⇄' },
-  { to: '/battle', label: 'Battle Sim', desc: 'Simulate a match', color: '#ff2fd0', icon: '⚔' },
-  { to: '/compendium', label: 'Compendium', desc: 'Release strategy codex', color: '#a3e635', icon: '⌘' },
+  { to: '/configurator', label: 'Configurator', desc: 'Build any legal combo', image: tileConfigurator },
+  { to: '/wiki', label: 'Part Wiki', desc: 'Search every part', image: tileWiki },
+  { to: '/tier-lists', label: 'Tier Lists', desc: 'S-D rankings by meta', image: tileTierLists },
+  { to: '/compare', label: 'Compare', desc: 'Part vs. part breakdown', image: tileCompare },
+  { to: '/battle', label: 'Battle Sim', desc: 'Simulate a match', image: tileBattle },
+  { to: '/compendium', label: 'Compendium', desc: 'Release strategy codex', image: tileCompendium },
 ]
 
 export default function Home() {
@@ -29,17 +35,19 @@ export default function Home() {
           <Link
             key={tile.to}
             to={tile.to}
-            className="pixel-btn pixel-border bg-panel-2 p-5 flex flex-col items-center text-center gap-2 group"
+            className="pixel-btn pixel-border relative h-40 overflow-hidden group block"
             style={{ borderColor: '#000' }}
           >
-            <div
-              className="w-16 h-16 flex items-center justify-center text-3xl pixel-border group-hover:animate-bounce-pixel"
-              style={{ background: tile.color, borderColor: '#000', color: '#0b0817' }}
-            >
-              {tile.icon}
+            <img
+              src={tile.image}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
+            <div className="absolute inset-0 flex flex-col items-center justify-end p-3 text-center">
+              <div className="font-pixel text-[12px] text-white drop-shadow-[2px_2px_0_#000]">{tile.label}</div>
+              <div className="text-slate-200 text-base drop-shadow-[1px_1px_0_#000]">{tile.desc}</div>
             </div>
-            <div className="font-pixel text-[12px] text-white mt-2">{tile.label}</div>
-            <div className="text-slate-300 text-base">{tile.desc}</div>
           </Link>
         ))}
       </div>

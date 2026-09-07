@@ -92,6 +92,15 @@ body {
   animation: clash-flash 0.3s ease-out forwards;
 }
 
+.neon-green {
+  color: #39ff14;
+  text-shadow:
+    0 0 4px #39ff14,
+    0 0 10px #39ff14,
+    0 0 18px #16c60c,
+    0 0 32px #0f8a08;
+}
+
 @keyframes flicker {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }

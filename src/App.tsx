@@ -7,6 +7,7 @@ import TierLists from './pages/TierLists'
 import Compare from './pages/Compare'
 import Battle from './pages/Battle'
 import Compendium from './pages/Compendium'
+import Dedication from './pages/Dedication'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/compare" element={<Compare />} />
         <Route path="/battle" element={<Battle />} />
         <Route path="/compendium" element={<Compendium />} />
+        <Route path="/dedication" element={<Dedication />} />
       </Route>
     </Routes>
   )
