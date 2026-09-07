@@ -6,6 +6,7 @@ import tileTierLists from '../assets/tile-tierlists.jpg'
 import tileCompare from '../assets/tile-compare.jpg'
 import tileBattle from '../assets/tile-battle.jpg'
 import tileCompendium from '../assets/tile-compendium.jpg'
+import tileGameplay from '../assets/tile-gameplay.jpg'
 
 const TILES = [
   { to: '/configurator', label: 'Configurator', desc: 'Build any legal combo', image: tileConfigurator },
@@ -14,6 +15,7 @@ const TILES = [
   { to: '/compare', label: 'Compare', desc: 'Part vs. part breakdown', image: tileCompare },
   { to: '/battle', label: 'Battle Sim', desc: 'Simulate a match', image: tileBattle },
   { to: '/compendium', label: 'Compendium', desc: 'Release strategy codex', image: tileCompendium },
+  { to: '/gameplay', label: 'Gameplay', desc: 'At-home matches & scoring', image: tileGameplay },
 ]
 
 export default function Home() {

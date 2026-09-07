@@ -8,6 +8,7 @@ const NAV = [
   { to: '/compare', label: 'Compare' },
   { to: '/battle', label: 'Battle' },
   { to: '/compendium', label: 'Compendium' },
+  { to: '/gameplay', label: 'Gameplay' },
   { to: '/dedication', label: '♥' },
 ]
 
